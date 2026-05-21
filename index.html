@@ -1,52 +1,73 @@
 <!DOCTYPE html>
 <html lang="en-us">
-  <head>
+<head>
     <meta charset="utf-8">
-    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
     <meta name="viewport" content="width=device-width, height=device-height, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Unity WebGL Player | Arrow Escape</title>
+    <title>Arrow Escape</title>
 
-    <!-- TG SDK + TADS SDK -->
+    <!-- TG SDK -->
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
-    <script src="https://tads.me/sdk/tads.min.js"></script>
-
-    <style>
-      *{margin:0;padding:0;}
-      html,body{width:100vw;height:100vh;overflow:hidden;position:fixed;background:#231F20;}
-      #unity-canvas{width:100vw;height:100vh;position:fixed;top:0;left:0;background:#231F20;}
-    </style>
-  </head>
-  <body style="text-align: center;">
-    <canvas id="unity-canvas" width=1080 height=1920 tabindex="-1"></canvas>
-
-    <script src="Build/webgl.loader.js"></script>
+    
+    <!-- 🔥 关键修复：监听 TADS SDK 加载完成 -->
     <script>
-      // TG 全屏初始化
-      document.addEventListener('DOMContentLoaded',function(){
-        if(window.Telegram&&window.Telegram.WebApp){
-          Telegram.WebApp.ready();
-          Telegram.WebApp.expand();
-          Telegram.WebApp.disableVerticalSwipes();
-          Telegram.WebApp.setHeaderColor('transparent');
-        }
-        // TADS 初始化（填入你的APP_KEY）
-        window.tads = new TADS("你的_TADS_APP_KEY");
-      });
+        // 全局标记
+        window.TADS_READY = false;
+        window.unityInstance = null;
 
-      // Unity 原始启动代码
-      createUnityInstance(document.querySelector("#unity-canvas"), {
-        dataUrl: "Build/webgl.data",
-        frameworkUrl: "Build/webgl.framework.js",
-        codeUrl: "Build/webgl.wasm",
-        symbolsUrl: "Build/webgl.symbols.json",
-        streamingAssetsUrl: "StreamingAssets",
-        companyName: "TheVayuputra",
-        productName: "Arrow Escape",
-        productVersion: "1.01.01",
-        showBanner: false
-      }).then((instance)=>{
-        window.unityInstance = instance;
-      });
+        // 等待 TADS SDK 加载
+        function loadTadsSDK() {
+            const script = document.createElement('script');
+            script.src = 'https://tads.me/sdk/tads.min.js';
+            script.onload = function() {
+                window.TADS_READY = true;
+                console.log("✅ TADS SDK 加载完成");
+                // SDK加载后，初始化TG全屏
+                initTGFullscreen();
+            };
+            document.head.appendChild(script);
+        }
+
+        // TG 全屏初始化
+        function initTGFullscreen() {
+            if (window.Telegram && window.Telegram.WebApp) {
+                Telegram.WebApp.ready();
+                Telegram.WebApp.expand();
+                Telegram.WebApp.disableVerticalSwipes();
+                Telegram.WebApp.setHeaderColor("transparent");
+            }
+        }
+
+        // 启动加载
+        loadTadsSDK();
     </script>
-  </body>
+
+    <!-- 全屏样式 -->
+    <style>
+        *{margin:0;padding:0;}
+        html,body{width:100vw;height:100vh;overflow:hidden;position:fixed;background:#231F20;}
+        #unity-canvas{width:100vw;height:100vh;position:fixed;top:0;left:0;}
+    </style>
+</head>
+<body>
+    <canvas id="unity-canvas" width=1080 height=1920 tabindex="-1"></canvas>
+    <script src="Build/webgl.loader.js"></script>
+
+    <script>
+        // 启动 Unity
+        createUnityInstance(document.querySelector("#unity-canvas"), {
+            dataUrl: "Build/webgl.data",
+            frameworkUrl: "Build/webgl.framework.js",
+            codeUrl: "Build/webgl.wasm",
+            symbolsUrl: "Build/webgl.symbols.json",
+            streamingAssetsUrl: "StreamingAssets",
+            companyName: "TheVayuputra",
+            productName: "Arrow Escape",
+            productVersion: "1.01.01",
+            showBanner: false
+        }).then((instance) => {
+            window.unityInstance = instance;
+            console.log("✅ Unity 加载完成");
+        });
+    </script>
+</body>
 </html>
